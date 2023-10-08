@@ -1,10 +1,2 @@
 include ':FtcRobotController'
 include ':TeamCode'
-/*include ':test'
-include ':TeamCode'
-include ':centerstage2023-2024'
-include ':lib'
-include ':sdk'
-project(':sdk').projectDir = new File(rootDir, 'opencv-4.8.0-android-sdk/OpenCV-android-sdk/sdk/')
-include ':sdk'
-*/
