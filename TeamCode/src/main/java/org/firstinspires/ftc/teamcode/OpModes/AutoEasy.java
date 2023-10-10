@@ -39,11 +39,15 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Subsystems.VisionEasyOpenCV;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.openftc.easyopencv.OpenCvCamera;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
 /*
@@ -136,19 +140,23 @@ public class AutoEasy extends LinearOpMode
 
         //Define vision OpenCV
         VisionEasyOpenCV visionEasyOpenCV;
-        OpenCvCamera camera;
+        OpenCvCamera cameraleft;
+        OpenCvCamera cameraright;
+
 
         //Define the webcams
         String leftcam = "Webcam1";
         String rightcam = "Webcam2";
+        visionEasyOpenCV = new VisionEasyOpenCV();
 
+        DriveTrain robot;
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must match the names assigned during the robot configuration.
         // step (using the FTC Robot Controller app on the phone).
-        leftFrontDrive  = hardwareMap.get(DcMotor.class, "leftfront_drive");
-        rightFrontDrive = hardwareMap.get(DcMotor.class, "rightfront_drive");
-        leftBackDrive  = hardwareMap.get(DcMotor.class, "leftback_drive");
-        rightBackDrive = hardwareMap.get(DcMotor.class, "rightback_drive");
+        leftFrontDrive  = hardwareMap.get(DcMotor.class, "LF");
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "RF");
+        leftBackDrive  = hardwareMap.get(DcMotor.class, "LB");
+        rightBackDrive = hardwareMap.get(DcMotor.class, "RB");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // When run, this OpMode should start both motors driving forward. So adjust these two lines based on your first test drive.
@@ -158,6 +166,24 @@ public class AutoEasy extends LinearOpMode
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
 
+        //Selected Starting Position
+        selectStartingPosition();
+
+        //Initialize the camera on INIT
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        cameraleft = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, leftcam), cameraMonitorViewId);
+        cameraleft.setPipeline(visionEasyOpenCV);
+        cameraleft.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        {
+            @Override
+            public void onOpened()
+            {
+                cameraleft.startStreaming(320,240, OpenCvCameraRotation.SIDEWAYS_LEFT);
+            }
+
+            @Override
+            public void onError(int errorCode) {}
+        });
 
         // Let driver prepare for Autonomous Starting
         // You got this!!!
@@ -168,14 +194,31 @@ public class AutoEasy extends LinearOpMode
             telemetry.addData("---------------------------------------", "");
             telemetry.addData("Selected Starting Position", startPosition);
             ROLLING_DICE();
-            //telemetry.addData("Park Position Identified by Camera: ", visionEasyOpenCV.getPosition());
+            telemetry.addData("Park Position Identified by Camera: ", visionEasyOpenCV.getPosition());
             telemetry.update();
         }
 
+        VisionEasyOpenCV.ParkingPosition position = VisionEasyOpenCV.ParkingPosition.ONE;
 
         while (opModeIsActive())
         {
+            position = visionEasyOpenCV.getPosition();
+            cameraleft.stopStreaming();
 
+            leftFrontDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+            rightFrontDrive.setDirection(DcMotorSimple.Direction.FORWARD);
+            leftBackDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+            rightBackDrive.setDirection(DcMotorSimple.Direction.FORWARD);
+
+            leftFrontDrive.setPower(0.5);
+            rightFrontDrive.setPower(0.5);
+            leftBackDrive.setPower(0.5);
+            rightFrontDrive.setPower(0.5);
+            sleep(100);
+            leftFrontDrive.setPower(0);
+            rightFrontDrive.setPower(0);
+            leftBackDrive.setPower(0);
+            rightFrontDrive.setPower(0);
             //pseudocode for aditi
             /*
             command robot to move forward and turn left with encoder
@@ -276,12 +319,56 @@ public class AutoEasy extends LinearOpMode
     TrajectorySequence trajectoryParkingTHREE ;
     TrajectorySequence trajectoryParkingTWO ;
 
+    //Initialize any other Pose2d's as desired
+    Pose2d initPose; // Starting Pose
+    //Pose2d midWayPose;
+    //Pose2d parkPose;
+    //Pose2d firstPose;
+
+    public void buildParking(VisionEasyOpenCV.ParkingPosition position){
+        initPose = new Pose2d(-70, 32, Math.toRadians(0));
+    }
+
     private void initAprilTag() {
             // Create the AprilTag processor by using a builder.
             aprilTag = new AprilTagProcessor.Builder().build();
     }
     public void DriveForward(){
 
+    }
+
+    //Method to select starting position using X, Y, A, B buttons on gamepad
+    public void selectStartingPosition() {
+        telemetry.setAutoClear(true);
+        telemetry.clearAll();
+        //******select start pose*****
+        while(!isStopRequested()){
+            telemetry.addData("Initializing RoboRaiders AutoOnlyPark for Team:","21386");
+            telemetry.addData("---------------------------------------","");
+            telemetry.addData("Select Starting Position using XYAB Keys on gamepad 1:","");
+            telemetry.addData("    Blue LEFT   ", "(X)");
+            telemetry.addData("    Blue RIGHT ", "(Y)");
+            telemetry.addData("    Red LEFT    ", "(B)");
+            telemetry.addData("    Red RIGHT  ", "(A)");
+            if(gamepad1.x){
+                startPosition = START_POSITION.BLUE_LEFT;
+                break;
+            }
+            if(gamepad1.y){
+                startPosition = START_POSITION.BLUE_RIGHT;
+                break;
+            }
+            if(gamepad1.b){
+                startPosition = START_POSITION.RED_LEFT;
+                break;
+            }
+            if(gamepad1.a){
+                startPosition = START_POSITION.RED_RIGHT;
+                break;
+            }
+            telemetry.update();
+        }
+        telemetry.clearAll();
     }
 
     }
