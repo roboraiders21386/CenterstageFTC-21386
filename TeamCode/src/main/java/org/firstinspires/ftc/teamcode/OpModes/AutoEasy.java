@@ -94,8 +94,16 @@ public class AutoEasy extends LinearOpMode
         RED_RIGHT
     }
 
+    public enum ROLLING_DICE{
+        LEFT_POS,
+        CENTER_POS,
+        RIGHT_POS
+    }
+
     //How to determine where we start?
     public static START_POSITION startPosition;
+    //What is the assigned position?
+    public static ROLLING_DICE assignedPose;
     // Adjust these numbers to suit your robot.
     final double DESIRED_DISTANCE = 6.0; //  this is how close the camera should get to the target (inches)
 
@@ -122,12 +130,6 @@ public class AutoEasy extends LinearOpMode
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
 
-    private void ROLLING_DICE() {
-        float LEFT_POS = 2;
-        float MIDDLE_POS = 1;
-        float RIGHT_POS = 0;
-        //telemetry.addData("Position of Team Prop: ", Set up Webcam first!);
-    }
 
 
 
@@ -174,11 +176,15 @@ public class AutoEasy extends LinearOpMode
         cameraleft = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, leftcam), cameraMonitorViewId);
         cameraleft.setPipeline(visionEasyOpenCV);
         cameraleft.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+                cameraright = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, leftcam), cameraMonitorViewId);
+        cameraright.setPipeline(visionEasyOpenCV);
+        cameraright.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
             @Override
             public void onOpened()
             {
                 cameraleft.startStreaming(320,240, OpenCvCameraRotation.SIDEWAYS_LEFT);
+                cameraright.startStreaming(320,240, OpenCvCameraRotation.SIDEWAYS_RIGHT);
             }
 
             @Override
@@ -193,7 +199,6 @@ public class AutoEasy extends LinearOpMode
             telemetry.addData("Starting RoboRaiders Autonomous Easy, type 2 for Left, 1 for Middle, and 0 for Right", "21386");
             telemetry.addData("---------------------------------------", "");
             telemetry.addData("Selected Starting Position", startPosition);
-            ROLLING_DICE();
             telemetry.addData("Park Position Identified by Camera: ", visionEasyOpenCV.getPosition());
             telemetry.update();
         }
@@ -204,26 +209,22 @@ public class AutoEasy extends LinearOpMode
         {
             position = visionEasyOpenCV.getPosition();
             cameraleft.stopStreaming();
+            cameraright.stopStreaming();
 
-            leftFrontDrive.setDirection(DcMotorSimple.Direction.REVERSE);
-            rightFrontDrive.setDirection(DcMotorSimple.Direction.FORWARD);
-            leftBackDrive.setDirection(DcMotorSimple.Direction.REVERSE);
-            rightBackDrive.setDirection(DcMotorSimple.Direction.FORWARD);
-
-            leftFrontDrive.setPower(0.5);
-            rightFrontDrive.setPower(0.5);
-            leftBackDrive.setPower(0.5);
-            rightFrontDrive.setPower(0.5);
-            sleep(100);
-            leftFrontDrive.setPower(0);
-            rightFrontDrive.setPower(0);
-            leftBackDrive.setPower(0);
-            rightFrontDrive.setPower(0);
+            if (assignedPose == ROLLING_DICE.LEFT_POS){
+                moveLeft();
+            }
+            else if (assignedPose == ROLLING_DICE.RIGHT_POS){
+                moveRight();
+            }
+            else{
+                moveCenter();
+            }
             //pseudocode for aditi
             /*
             command robot to move forward and turn left with encoder
             use webcam detection to determine where to place pixel
-            if (ROLLING_DICE == "Left")
+            if (assignedPose == "Left")
             {
             place pixel on left line
             move backwards
@@ -234,6 +235,46 @@ public class AutoEasy extends LinearOpMode
             }
              */
         }
+    }
+    //Pose 2ds
+    Pose2d initPose; // Starting Pose
+    Pose2d midWayPose;
+    Pose2d leftPose;
+    Pose2d rightPose;
+    Pose2d centerPose;
+
+    private void moveLeft() {
+        /*
+        leftFrontDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightFrontDrive.setDirection(DcMotorSimple.Direction.FORWARD);
+        leftBackDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightBackDrive.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        leftFrontDrive.setPower(0.5);
+        rightFrontDrive.setPower(0.5);
+        leftBackDrive.setPower(0.5);
+        rightFrontDrive.setPower(0.5);
+        sleep(100);
+        leftFrontDrive.setPower(0);
+        rightFrontDrive.setPower(0);
+        leftBackDrive.setPower(0);
+        rightFrontDrive.setPower(0);
+         */
+        initPose = new Pose2d(-70, 32, Math.toRadians(0));
+        midWayPose = new Pose2d(-42, 36, Math.toRadians(0)); //Choose the pose to move forward towards signal cone
+        leftPose = new Pose2d(-40, 60, Math.toRadians(0)); // Left Location
+    }
+
+    private void moveRight() {
+        initPose = new Pose2d(-70, 32, Math.toRadians(0));
+        midWayPose = new Pose2d(-42, 36, Math.toRadians(0)); //Choose the pose to move forward towards signal cone
+        rightPose = new Pose2d(-40, 11, Math.toRadians(0)); // Location 3
+    }
+
+    private void moveCenter() {
+        initPose = new Pose2d(-70, 32, Math.toRadians(0));
+        midWayPose = new Pose2d(-42, 36, Math.toRadians(0)); //Choose the pose to move forward towards signal cone
+        centerPose = new Pose2d(-38, 35, Math.toRadians(0)); // Location 2
     }
 
     /**
@@ -367,6 +408,26 @@ public class AutoEasy extends LinearOpMode
                 break;
             }
             telemetry.update();
+
+            telemetry.addData("Processing...", "");
+            telemetry.addData("...........................................", "");
+            telemetry.addData("Select Randomized Path: ", "");
+            telemetry.addData("Left ", "(X)");
+            telemetry.addData("Center ", "(B)");
+            telemetry.addData("Right ", "(Y)");
+
+            if(gamepad1.x){
+                assignedPose = ROLLING_DICE.LEFT_POS;
+                break;
+            }
+            if(gamepad1.y){
+                assignedPose = ROLLING_DICE.RIGHT_POS;
+                break;
+            }
+            if(gamepad1.b){
+                assignedPose = ROLLING_DICE.CENTER_POS;
+                break;
+            }
         }
         telemetry.clearAll();
     }
