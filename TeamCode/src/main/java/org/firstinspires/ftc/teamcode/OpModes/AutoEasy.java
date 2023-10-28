@@ -85,6 +85,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
  *
  */
 
+
 @Autonomous(name="A_AutoTestDrive")
 
 public class AutoEasy extends LinearOpMode
@@ -132,10 +133,10 @@ public class AutoEasy extends LinearOpMode
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
 
+    public MyCameraOpenListener async;
 
 
-
-    @Override public void runOpMode()
+    public void runOpMode()
     {
 
         // Initialize the Apriltag Detection process
@@ -177,7 +178,7 @@ public class AutoEasy extends LinearOpMode
         cameraleft = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, leftcam), cameraMonitorViewId);
         cameraleft.setPipeline(visionEasyOpenCV);
         sleep(100);
-        cameraleft.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        cameraleft.openCameraDeviceAsync(new MyCameraOpenListener());
         cameraright = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, leftcam), cameraMonitorViewId);
         cameraright.setPipeline(visionEasyOpenCV);
         cameraright.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
