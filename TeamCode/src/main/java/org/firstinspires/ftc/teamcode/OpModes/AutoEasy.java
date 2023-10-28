@@ -46,6 +46,8 @@ import org.openftc.easyopencv.OpenCvCamera;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+
+import org.openftc.easyopencv.OpenCvCamera.AsyncCameraOpenListener;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -83,7 +85,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
  *
  */
 
-@Autonomous(name="AutoTestDrive")
+@Autonomous(name="A_AutoTestDrive")
 
 public class AutoEasy extends LinearOpMode
 {
@@ -133,7 +135,6 @@ public class AutoEasy extends LinearOpMode
 
 
 
-
     @Override public void runOpMode()
     {
 
@@ -170,13 +171,14 @@ public class AutoEasy extends LinearOpMode
 
         //Selected Starting Position
         selectStartingPosition();
-
+        //
         //Initialize the camera on INIT
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         cameraleft = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, leftcam), cameraMonitorViewId);
         cameraleft.setPipeline(visionEasyOpenCV);
+        sleep(100);
         cameraleft.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-                cameraright = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, leftcam), cameraMonitorViewId);
+        cameraright = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, leftcam), cameraMonitorViewId);
         cameraright.setPipeline(visionEasyOpenCV);
         cameraright.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
@@ -227,7 +229,7 @@ public class AutoEasy extends LinearOpMode
             if (assignedPose == "Left")
             {
             place pixel on left line
-            move backwards
+            move backward
             turn towards the backdrop
             scan April tags
             place yellow pixel on left side of backdrop
@@ -236,6 +238,11 @@ public class AutoEasy extends LinearOpMode
              */
         }
     }
+    TrajectorySequence trajectoryParking ;
+    TrajectorySequence trajectoryParkingONE ;
+    TrajectorySequence trajectoryParkingTHREE ;
+    TrajectorySequence trajectoryParkingTWO ;
+
     //Pose 2ds
     Pose2d initPose; // Starting Pose
     Pose2d midWayPose;
@@ -354,17 +361,7 @@ public class AutoEasy extends LinearOpMode
     }
 
         */
-
-    TrajectorySequence trajectoryParking ;
-    TrajectorySequence trajectoryParkingONE ;
-    TrajectorySequence trajectoryParkingTHREE ;
-    TrajectorySequence trajectoryParkingTWO ;
-
-    //Initialize any other Pose2d's as desired
-    Pose2d initPose; // Starting Pose
-    //Pose2d midWayPose;
-    //Pose2d parkPose;
-    //Pose2d firstPose;
+    
 
     public void buildParking(VisionEasyOpenCV.ParkingPosition position){
         initPose = new Pose2d(-70, 32, Math.toRadians(0));
