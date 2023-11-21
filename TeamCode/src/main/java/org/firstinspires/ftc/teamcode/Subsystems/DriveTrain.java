@@ -8,7 +8,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-//import org.firstinspires.ftc.teamcode.OpModes.AutoOpMode;
+//import org.firstinspires.ftc.teamcode.OpModes.autonomous.OpModes.AutoOpMode;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.MecanumDrive;
 
