@@ -31,6 +31,8 @@ package org.firstinspires.ftc.teamcode.OpModes.autonomous;
 
 import static com.qualcomm.robotcore.util.ElapsedTime.Resolution.SECONDS;
 
+import static org.firstinspires.ftc.teamcode.drive.MecanumDrive.getVelocityConstraint;
+
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 //import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -40,8 +42,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.VisionOpenCVPipeline;
+import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.MecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -92,14 +97,25 @@ public class RRAutonomous extends LinearOpMode {
         RIGHT
     }
     public static IDENTIFIED_SPIKE_MARK_LOCATION identifiedSpikeMarkLocation = IDENTIFIED_SPIKE_MARK_LOCATION.LEFT;
+    public DriveTrain driveTrain;
+
 
     public String whichSide = "LEFT";
+
+    //Initialize any other Pose2d's as desired
+    Pose2d initPose; // Starting Pose
+    //Initialize any other TrajectorySequences as desired
+    TrajectorySequence trajectoryParking ;
 
     @Override
     public void runOpMode() throws InterruptedException {
 
+
+
         //Create the vision pipeline object - 11/24
         visionPipeline = new VisionOpenCVPipeline(telemetry);
+        driveTrain = new DriveTrain(hardwareMap);
+
 
         //Key Pay inputs to selecting Starting Position of robot
         selectStartingPosition();
@@ -110,18 +126,8 @@ public class RRAutonomous extends LinearOpMode {
         visionPipeline.setAlliancePipe(String.valueOf(alliance));
         initVision(visionPipeline);
 
-        // Wait for the DS start button to be touched.
-        telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
-        telemetry.addData(">", "Touch Play to start OpMode");
-        telemetry.update();
-        //waitForStart();
-
         while (!isStopRequested() && !opModeIsActive()) {
             telemetry.addData("Selected Starting Position", startPosition);
-
-            //Run Vuforia Tensor Flow and keep watching for the identifier in the Signal Cone.
-            //runTfodTensorFlow();
-            //telemetry.addData("Vision identified Parking Location", identifiedSpikeMarkLocation);
             telemetry.addData("Vision identified Parking Location", visionPipeline.getSide());
             telemetry.update();
         }
@@ -132,13 +138,24 @@ public class RRAutonomous extends LinearOpMode {
             //Build parking trajectory based on last detected target by vision
             whichSide = visionPipeline.getSide();
             camera.stopStreaming();
+
+            //set the starting pose
+            initPose = new Pose2d(70, 32, Math.toRadians(180)); //Starting pose
+            driveTrain.getLocalizer().setPoseEstimate(initPose);
+            runTestAutonomous();
             //runAutonoumousMode();
         }
     }   // end runOpMode()
 
+    public void runTestAutonomous(){
+
+        trajectoryParking = driveTrain.trajectorySequenceBuilder(initPose)
+                .setVelConstraint(getVelocityConstraint(30 /* Slower Velocity*/, 15 /*Slower Angular Velocity*/, DriveConstants.TRACK_WIDTH))
+                .forward(10)
+                .build();
+        driveTrain.followTrajectorySequence(trajectoryParking);
+    }
     /*
-
-
     public void runAutonoumousMode() {
         //Initialize Pose2d as desired
         Pose2d initPose = new Pose2d(0, 0, 0); // Starting Pose
