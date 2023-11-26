@@ -35,7 +35,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 //Vision and Roadrunner
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.OpModes.autonomous.MyCameraOpenListener;
 import org.firstinspires.ftc.teamcode.Subsystems.VisionEasyOpenCV;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -130,7 +129,7 @@ public class AutoEasy extends LinearOpMode
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
 
-    public MyCameraOpenListener async;
+    public org.firstinspires.ftc.teamcode.OpModes.autonomous.OpModes.autonomous.MyCameraOpenListener async;
 
 
     public void runOpMode()
