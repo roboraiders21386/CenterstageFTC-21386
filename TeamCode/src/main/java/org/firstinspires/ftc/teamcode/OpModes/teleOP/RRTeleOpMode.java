@@ -73,6 +73,10 @@ public class RRTeleOpMode extends LinearOpMode {
                     -gamepad1.right_stick_x * SLOW_DOWN_FACTOR
             ));
 
+            //Update the pos estimates
+            drive.update();
+
+
             if (pixel.isPressed()) {
                 INTAKE3.setPower(0); //stops the intake servos
                 INTAKE4.setPower(0);
@@ -143,6 +147,8 @@ public class RRTeleOpMode extends LinearOpMode {
             telemetry.addLine("Current Pose");
             telemetry.addData("x", drive.getPoseEstimate().getX());
             telemetry.addData("y", drive.getPoseEstimate().getY());
+            telemetry.addData("heading: ", drive.getPoseEstimate().getHeading());
+            telemetry.addData("heading degrees: ", Math.toDegrees(drive.getPoseEstimate().getHeading()));
             //telemetry.addData("heading", Math.toDegrees(drive.heading.log()));
             telemetry.update();
 
