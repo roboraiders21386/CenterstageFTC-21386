@@ -103,6 +103,7 @@ public class RRAutonomous extends LinearOpMode {
 
     //Initialize any other Pose2d's as desired
     Pose2d initPose; // Starting Pose
+    Pose2d moveBeyondTrussPose;
     //Initialize any other TrajectorySequences as desired
     TrajectorySequence trajectoryParking ;
 
@@ -139,8 +140,10 @@ public class RRAutonomous extends LinearOpMode {
             camera.stopStreaming();
 
             //set the starting pose
-            initPose = new Pose2d(70, 32, Math.toRadians(180)); //Starting pose
+            //initPose = new Pose2d(70, 32, Math.toRadians(180)); //Starting pose
+            initPose = new Pose2d(0, 0, 0);
             driveTrain.getLocalizer().setPoseEstimate(initPose);
+            moveBeyondTrussPose = new Pose2d(15,0,0);
             runTestAutonomous();
             //runAutonoumousMode();
         }
@@ -150,7 +153,8 @@ public class RRAutonomous extends LinearOpMode {
 
         trajectoryParking = driveTrain.trajectorySequenceBuilder(initPose)
                 .setVelConstraint(getVelocityConstraint(30 /* Slower Velocity*/, 15 /*Slower Angular Velocity*/, DriveConstants.TRACK_WIDTH))
-                .forward(10)
+                .lineToLinearHeading(moveBeyondTrussPose)
+                //.back(10)
                 .build();
         driveTrain.followTrajectorySequence(trajectoryParking);
     }

@@ -42,7 +42,7 @@ public class RRTestAuto extends LinearOpMode {
 
         //Game Play Button  is pressed
         if (opModeIsActive() && !isStopRequested()) {
-
+            //assuming we start on blue left
             initPose = new Pose2d(70, 32, Math.toRadians(180)); //Starting pose
             midWayPose = new Pose2d(-42, 36, Math.toRadians(0));
             parkPose = new Pose2d(38, 35, Math.toRadians(180));

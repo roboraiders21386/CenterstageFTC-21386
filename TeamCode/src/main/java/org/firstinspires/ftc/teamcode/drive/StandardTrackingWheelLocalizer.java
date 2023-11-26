@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.util.Encoder;
 
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 
 /*
@@ -48,11 +49,14 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
         rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "RF"));
         frontEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "LB"));
 
+
+
         //leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "leftEncoder"));
         //rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "rightEncoder"));
         //frontEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "frontEncoder"));
 
         // TODO: reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
+        //leftEncoder.setDirection(Encoder.Direction.REVERSE); only if needed
     }
 
     public static double encoderTicksToInches(double ticks) {
