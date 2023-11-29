@@ -153,6 +153,12 @@ public class RRTeleOpMode extends LinearOpMode {
             INTAKE3.setPower(0);
             INTAKE4.setPower(0);
 
+            if (gamepad1.start) { //this resets the arm to attach the hook
+                armMotor.setTargetPosition(0);
+                armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                armMotor.setPower(0.75);
+            }
+
             if (gamepad1.dpad_up) {
                 armMotor.setTargetPosition(armUpPosition);
                 armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
