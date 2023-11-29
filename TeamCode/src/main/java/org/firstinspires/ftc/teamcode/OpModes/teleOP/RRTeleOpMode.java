@@ -155,25 +155,18 @@ public class RRTeleOpMode extends LinearOpMode {
 
             if (gamepad1.start) { //this resets the arm to attach the hook
                 armMotor.setTargetPosition(0);
+                liftMotor.setTargetPosition(0);
+                wrist.setPosition(0);
                 armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); //to be tested
                 armMotor.setPower(0.75);
             }
 
-            if (gamepad1.dpad_up) {
-                armMotor.setTargetPosition(armUpPosition);
-                armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            if(gamepad1.dpad_down){
                 armMotor.setPower(0.5);
-                liftMotor.setTargetPosition(armUpPosition);
-                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                liftMotor.setPower(0.5);
             }
-            if (gamepad1.dpad_down) {
-                armMotor.setTargetPosition(armDownPosition);
-                armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                armMotor.setPower(0.3);
-                liftMotor.setTargetPosition(armDownPosition);
-                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                liftMotor.setPower(0.3);
+            if(gamepad1.dpad_up){
+                armMotor.setPower(-0.5);
             }
 
             double position = armMotor.getCurrentPosition();
