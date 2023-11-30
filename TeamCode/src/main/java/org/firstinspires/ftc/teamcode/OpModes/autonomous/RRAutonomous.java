@@ -90,12 +90,7 @@ public class RRAutonomous extends LinearOpMode {
     public static START_POSITION startPosition;
     public static ALLIANCE alliance;
 
-    public enum IDENTIFIED_SPIKE_MARK_LOCATION {
-        LEFT,
-        MIDDLE,
-        RIGHT
-    }
-    public static IDENTIFIED_SPIKE_MARK_LOCATION identifiedSpikeMarkLocation = IDENTIFIED_SPIKE_MARK_LOCATION.LEFT;
+
     public DriveTrain driveTrain;
 
 
@@ -104,6 +99,8 @@ public class RRAutonomous extends LinearOpMode {
     //Initialize any other Pose2d's as desired
     Pose2d initPose; // Starting Pose
     Pose2d moveBeyondTrussPose;
+    Pose2d dropPurplePixelPose;
+    Pose2d midwayPose1, midwayPose1a, intakeStack, midwayPose2, dropYellowPixelPose,parkPose;
     //Initialize any other TrajectorySequences as desired
     TrajectorySequence trajectoryParking ;
 
@@ -121,8 +118,7 @@ public class RRAutonomous extends LinearOpMode {
         selectStartingPosition();
         telemetry.addData("Selected Starting Position", startPosition);
 
-        //Activate Camera Vision that uses TensorFlow for pixel detection
-        //initTfod();
+        //Activate Camera Vision
         visionPipeline.setAlliancePipe(String.valueOf(alliance));
         initVision(visionPipeline);
 
@@ -139,199 +135,124 @@ public class RRAutonomous extends LinearOpMode {
             whichSide = visionPipeline.getSide();
             camera.stopStreaming();
 
+
             //set the starting pose
-            //initPose = new Pose2d(70, 32, Math.toRadians(180)); //Starting pose
-            initPose = new Pose2d(0, 0, 0);
+            initPose = new Pose2d(0, 0, 0); // Starting Pose
+            moveBeyondTrussPose = new Pose2d(0,0,0);
+            dropPurplePixelPose = new Pose2d(0, 0, 0);
+            midwayPose1 = new Pose2d(0,0,0);
+            midwayPose1a = new Pose2d(0,0,0);
+            intakeStack = new Pose2d(0,0,0);
+            midwayPose2 = new Pose2d(0,0,0);
+            dropYellowPixelPose = new Pose2d(0, 0, 0);
+            parkPose = new Pose2d(0,0, 0);
+
+            //Letting the drivetrain know...
             driveTrain.getLocalizer().setPoseEstimate(initPose);
-            moveBeyondTrussPose = new Pose2d(15,0,0);
+
+            switch (startPosition) {
+                case BLUE_LEFT:
+                    setBlueLeftPositions(whichSide);
+                    break;
+                case RED_RIGHT:
+                    setRedRightPositions(whichSide);
+                    break;
+                case RED_LEFT:
+                    //TO DO
+                    setRedLeftPositions(whichSide);
+                    break;
+                case BLUE_RIGHT:
+                    //TO DO
+                    setBlueRightPositions(whichSide);
+                    break;
+            }
+            setBlueLeftPositions(whichSide);
+
             runTestAutonomous();
-            //runAutonoumousMode();
         }
     }   // end runOpMode()
+
 
     public void runTestAutonomous(){
 
         trajectoryParking = driveTrain.trajectorySequenceBuilder(initPose)
                 .setVelConstraint(getVelocityConstraint(30 /* Slower Velocity*/, 15 /*Slower Angular Velocity*/, DriveConstants.TRACK_WIDTH))
                 .lineToLinearHeading(moveBeyondTrussPose)
+                .lineToLinearHeading(dropPurplePixelPose)
+                .lineToLinearHeading(midwayPose1)
+                .lineToLinearHeading(dropYellowPixelPose)
+                .lineToLinearHeading(parkPose)
                 //.back(10)
                 .build();
         driveTrain.followTrajectorySequence(trajectoryParking);
     }
-    /*
-    public void runAutonoumousMode() {
-        //Initialize Pose2d as desired
-        Pose2d initPose = new Pose2d(0, 0, 0); // Starting Pose
-        Pose2d moveBeyondTrussPose = new Pose2d(0,0,0);
-        Pose2d dropPurplePixelPose = new Pose2d(0, 0, 0);
-        Pose2d midwayPose1 = new Pose2d(0,0,0);
-        Pose2d midwayPose1a = new Pose2d(0,0,0);
-        Pose2d intakeStack = new Pose2d(0,0,0);
-        Pose2d midwayPose2 = new Pose2d(0,0,0);
-        Pose2d dropYellowPixelPose = new Pose2d(0, 0, 0);
-        Pose2d parkPose = new Pose2d(0,0, 0);
-        double waitSecondsBeforeDrop = 0;
-        MecanumDrive drive = new MecanumDrive(hardwareMap, initPose);
 
-        initPose = new Pose2d(0, 0, Math.toRadians(0)); //Starting pose
+    public void setBlueLeftPositions(String whichSide){
+        moveBeyondTrussPose = new Pose2d(15,0,0);
+        switch(whichSide){
+            case "LEFT":
+                //dropPurplePixelPose = new Pose2d(26, 8, Math.toRadians(0));
+                dropPurplePixelPose = new Pose2d(30, 10, Math.toRadians(0));
+                //dropYellowPixelPose = new Pose2d(23, 36, Math.toRadians(-90));
+                dropYellowPixelPose = new Pose2d(23, 36, Math.toRadians(90));
+                break;
+            case "MIDDLE":
+                dropPurplePixelPose = new Pose2d(30, 3, Math.toRadians(0));
+                dropYellowPixelPose = new Pose2d(30, 36,  Math.toRadians(90));
+                break;
+            case "RIGHT":
+                dropPurplePixelPose = new Pose2d(30, -9, Math.toRadians(-45));
+                dropYellowPixelPose = new Pose2d(37, 36, Math.toRadians(90));
+                break;
+        }
+        //midwayPose1 = new Pose2d(14, 13, Math.toRadians(-45));
+        midwayPose1 = new Pose2d(12, 0, 0);
+        //waitSecondsBeforeDrop = 2; //TODO: Adjust time to wait for alliance partner to move from board
+        //parkPose = new Pose2d(8, 30, Math.toRadians(90));
+        //double waitSecondsBeforeDrop = 0;
+
+    } //end of setBlueLeftPositions
+
+    public void setRedRightPositions(String whichSide){
         moveBeyondTrussPose = new Pose2d(15,0,0);
 
-        switch (startPosition) {
-            case BLUE_LEFT:
-                drive = new MecanumDrive(hardwareMap, initPose);
-                switch(whichSide){
-                    case "LEFT":
-                        dropPurplePixelPose = new Pose2d(26, 8, Math.toRadians(0));
-                        dropYellowPixelPose = new Pose2d(23, 36, Math.toRadians(-90));
-                        break;
-                    case "MIDDLE":
-                        dropPurplePixelPose = new Pose2d(30, 3, Math.toRadians(0));
-                        dropYellowPixelPose = new Pose2d(30, 36,  Math.toRadians(-90));
-                        break;
-                    case "RIGHT":
-                        dropPurplePixelPose = new Pose2d(30, -9, Math.toRadians(-45));
-                        dropYellowPixelPose = new Pose2d(37, 36, Math.toRadians(-90));
-                        break;
-                }
-                midwayPose1 = new Pose2d(14, 13, Math.toRadians(-45));
-                waitSecondsBeforeDrop = 2; //TODO: Adjust time to wait for alliance partner to move from board
-                parkPose = new Pose2d(8, 30, Math.toRadians(-90));
-                break;
 
-            case RED_RIGHT:
-                drive = new MecanumDrive(hardwareMap, initPose);
-                setRedRightPos();
-                switch(whichSide){
-                    case "LEFT":
-                        dropPurplePixelPose = new Pose2d(30, 9, Math.toRadians(45));
-                        dropYellowPixelPose = new Pose2d(21, -36, Math.toRadians(90));
-                        break;
-                    case "MIDDLE":
-                        dropPurplePixelPose = new Pose2d(30, -3, Math.toRadians(0));
-                        dropYellowPixelPose = new Pose2d(29, -36,  Math.toRadians(90));
-                        break;
-                    case "RIGHT":
-                        dropPurplePixelPose = new Pose2d(26, -8, Math.toRadians(0));
-                        dropYellowPixelPose = new Pose2d(37, -36, Math.toRadians(90));
-                        break;
-                }
-                midwayPose1 = new Pose2d(14, -13, Math.toRadians(45));
-                waitSecondsBeforeDrop = 2; //TODO: Adjust time to wait for alliance partner to move from board
-                parkPose = new Pose2d(8, -30, Math.toRadians(90));
+        //THESE ARE NOT THE CORRECT POSITIONS FOR RED RIGHT SO CHANGE THEM
+        switch(whichSide){
+            case "LEFT":
+                //dropPurplePixelPose = new Pose2d(26, 8, Math.toRadians(0));
+                dropPurplePixelPose = new Pose2d(30, 10, Math.toRadians(0));
+                //dropYellowPixelPose = new Pose2d(23, 36, Math.toRadians(-90));
+                dropYellowPixelPose = new Pose2d(23, 36, Math.toRadians(90));
                 break;
-
-            case BLUE_RIGHT:
-                drive = new MecanumDrive(hardwareMap, initPose);
-                switch(whichSide){
-                    case "LEFT":
-                        dropPurplePixelPose = new Pose2d(27, 9, Math.toRadians(45));
-                        dropYellowPixelPose = new Pose2d(27, 86, Math.toRadians(-90));
-                        break;
-                    case "MIDDLE":
-                        dropPurplePixelPose = new Pose2d(30, -3, Math.toRadians(0));
-                        dropYellowPixelPose = new Pose2d(34, 86, Math.toRadians(-90));
-                        break;
-                    case "RIGHT":
-                        dropPurplePixelPose = new Pose2d(26, -8, Math.toRadians(0));
-                        dropYellowPixelPose = new Pose2d(43, 86, Math.toRadians(-90));
-                        break;
-                }
-                midwayPose1 = new Pose2d(8, -8, Math.toRadians(0));
-                midwayPose1a = new Pose2d(18, -18, Math.toRadians(-90));
-                intakeStack = new Pose2d(52, -19,Math.toRadians(-90));
-                midwayPose2 = new Pose2d(52, 62, Math.toRadians(-90));
-                waitSecondsBeforeDrop = 2; //TODO: Adjust time to wait for alliance partner to move from board
-                parkPose = new Pose2d(50, 84, Math.toRadians(-90));
+            case "MIDDLE":
+                dropPurplePixelPose = new Pose2d(30, 3, Math.toRadians(0));
+                dropYellowPixelPose = new Pose2d(30, 36,  Math.toRadians(90));
                 break;
-
-            case RED_LEFT:
-                drive = new MecanumDrive(hardwareMap, initPose);
-                switch(whichSide){
-                    case "LEFT":
-                        dropPurplePixelPose = new Pose2d(26, 8, Math.toRadians(0));
-                        dropYellowPixelPose = new Pose2d(37, -86, Math.toRadians(90));
-                        break;
-                    case "MIDDLE":
-                        dropPurplePixelPose = new Pose2d(30, -3, Math.toRadians(0));
-                        dropYellowPixelPose = new Pose2d(29, -86, Math.toRadians(90));
-                        break;
-                    case "RIGHT":
-                        dropPurplePixelPose = new Pose2d(27, -9, Math.toRadians(-45));
-                        dropYellowPixelPose = new Pose2d(21, -86, Math.toRadians(90));
-                        break;
-                }
-                midwayPose1 = new Pose2d(8, 8, Math.toRadians(0));
-                midwayPose1a = new Pose2d(18, 18, Math.toRadians(90));
-                intakeStack = new Pose2d(52, 19,Math.toRadians(90));
-                midwayPose2 = new Pose2d(52, -62, Math.toRadians(90));
-                waitSecondsBeforeDrop = 2; //TODO: Adjust time to wait for alliance partner to move from board
-                parkPose = new Pose2d(50, -84, Math.toRadians(90));
+            case "RIGHT":
+                dropPurplePixelPose = new Pose2d(30, -9, Math.toRadians(-45));
+                dropYellowPixelPose = new Pose2d(37, 36, Math.toRadians(90));
                 break;
         }
+        //midwayPose1 = new Pose2d(14, 13, Math.toRadians(-45));
+        midwayPose1 = new Pose2d(12, 0, 0);
+        //waitSecondsBeforeDrop = 2; //TODO: Adjust time to wait for alliance partner to move from board
+        //parkPose = new Pose2d(8, 30, Math.toRadians(90));
+        //double waitSecondsBeforeDrop = 0;
 
-        //Move robot to dropPurplePixel based on identified Spike Mark Location
-        telemetry.addData("Move robot to dropPurplePixel based on identified Spike Mark Location: ", whichSide);
-        Actions.runBlocking(
-                drive.actionBuilder(drive.pose)
-                        .strafeToLinearHeading(moveBeyondTrussPose.position, moveBeyondTrussPose.heading)
-                        .strafeToLinearHeading(dropPurplePixelPose.position, dropPurplePixelPose.heading)
-                        .build());
+    }  // end of setRedRightPositions
 
-        //TODO : Code to drop Purple Pixel on Spike Mark
-        safeWaitSeconds(1);
+    public void setRedLeftPositions(String whichSide){
 
-        //Move robot to midwayPose1
-        telemetry.addData("Move robot to midwayPose1: ", whichSide);
+    } //end of setRedLeftPositions
 
-        Actions.runBlocking(
-                drive.actionBuilder(drive.pose)
-                        .strafeToLinearHeading(midwayPose1.position, midwayPose1.heading)
-                        .build());
+    public void setBlueRightPositions(String whichSide){
 
-        //For Blue Right and Red Left, intake pixel from stack
-        if (startPosition == START_POSITION.BLUE_RIGHT ||
-                startPosition == START_POSITION.RED_LEFT) {
-            Actions.runBlocking(
-                    drive.actionBuilder(drive.pose)
-                            .strafeToLinearHeading(midwayPose1a.position, midwayPose1a.heading)
-                            .strafeToLinearHeading(intakeStack.position, intakeStack.heading)
-                            .build());
-
-            //TODO : Code to intake pixel from stack
-            safeWaitSeconds(1);
-
-            //Move robot to midwayPose2 and to dropYellowPixelPose
-            Actions.runBlocking(
-                    drive.actionBuilder(drive.pose)
-                            .strafeToLinearHeading(midwayPose2.position, midwayPose2.heading)
-                            .build());
-        }
-
-        safeWaitSeconds(waitSecondsBeforeDrop);
-
-        //Move robot to midwayPose2 and to dropYellowPixelPose
-        telemetry.addData("Move robot to midwayPose2 and to dropYellowPixelPose: ", whichSide);
-
-        Actions.runBlocking(
-                drive.actionBuilder(drive.pose)
-                        .setReversed(true)
-                        .splineToLinearHeading(dropYellowPixelPose,0)
-                        .build());
+    } //end of setBlueRightPositions
 
 
-        //TODO : Code to drop Pixel on Backdrop
-        safeWaitSeconds(1);
 
-        //Move robot to park in Backstage
-        telemetry.addData("Move robot to park in Backstage: ", whichSide);
 
-        Actions.runBlocking(
-                drive.actionBuilder(drive.pose)
-                        .strafeToLinearHeading(parkPose.position, parkPose.heading)
-                        //.splineToLinearHeading(parkPose,0)
-                        .build());
-    }  // End runAutonoumousMode
-*/
 
     //Method to select starting position using X, Y, A, B buttons on gamepad
     public void selectStartingPosition() {
