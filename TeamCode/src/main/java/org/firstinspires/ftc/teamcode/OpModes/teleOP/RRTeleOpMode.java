@@ -24,6 +24,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 @TeleOp(name = "RR TeleOp (roadrunner 0.5.6)", group = "00-Teleop")
 public class RRTeleOpMode extends LinearOpMode {
 
+    private int LIFT_INCREMENT = 550;
     private TouchSensor pixel;
 
     private CRServo INTAKE3; //moving wheels
@@ -35,12 +36,15 @@ public class RRTeleOpMode extends LinearOpMode {
 
     private double TURN_WRIST = 1; //turn it forward
     private double RESET_WRIST = 0.5; //so it doesn't swing 180 back
+    
+    private double ARMLIFT_POWER = 0.5; //TODO change later after testing period 
 
     double ServoPosition = 1;
     double ServoSpeed = 0.5;
 
     private Servo RWRIST;
     private Servo LWRIST;
+
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -53,14 +57,16 @@ public class RRTeleOpMode extends LinearOpMode {
         int liftUpPosition = -150;
         int armDownPosition = 300;
         int liftDownPosition = 150;
+        int currentPos;
 
         pixel = hardwareMap.get(TouchSensor.class, "pixel");
         INTAKE3 = hardwareMap.get(CRServo.class, "INTAKE3");
         INTAKE4 = hardwareMap.get(CRServo.class, "INTAKE4");
         wrist = hardwareMap.get(Servo.class, "WRIST");
         drone = hardwareMap.get(Servo.class, "droneLauncher");
-        DcMotor armMotor = hardwareMap.dcMotor.get("Arm Motor");
+        DcMotor armMotor = hardwareMap.dcMotor.get("Arm");
         DcMotor liftMotor = hardwareMap.dcMotor.get("LIFT");
+
 
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -90,6 +96,24 @@ public class RRTeleOpMode extends LinearOpMode {
 
             //Update the pos estimates
             drive.update();
+
+            if (gamepad1.right_stick_y > 0) {
+                armMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+                liftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+                armMotor.setPower( gamepad1.right_stick_y);
+                liftMotor.setPower(gamepad1.right_stick_y);
+                telemetry.addData("Should Be", "Moving UP!");
+                telemetry.update();
+            }
+
+            if (gamepad1.right_stick_y < 0) {
+                armMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+                liftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+                armMotor.setPower(-0.5 *  gamepad1.right_stick_y);
+                liftMotor.setPower(-0.5 *  gamepad1.right_stick_y);
+                telemetry.addData("Should Be", "Moving DOWN!");
+                telemetry.update();
+            }
 
 
             if (pixel.isPressed()) {
@@ -156,17 +180,26 @@ public class RRTeleOpMode extends LinearOpMode {
             if (gamepad1.start) { //this resets the arm to attach the hook
                 armMotor.setTargetPosition(0);
                 liftMotor.setTargetPosition(0);
-                wrist.setPosition(0);
+                wrist.setPosition(RESET_WRIST);
                 armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); //to be tested
+                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); //TODO to be tested
                 armMotor.setPower(0.75);
             }
 
-            if(gamepad1.dpad_down){
-                armMotor.setPower(0.5);
+            if (gamepad2.dpad_up){
+                //Incremental Slide up
+                armMotor.setPower(1 * ARMLIFT_POWER);
+                currentPos = armMotor.getCurrentPosition();
+                armMotor.setTargetPosition(currentPos + LIFT_INCREMENT );
+                armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
-            if(gamepad1.dpad_up){
-                armMotor.setPower(-0.5);
+            if (gamepad2.dpad_down){
+                //Incremental Slide down
+                armMotor.setPower(-1 * ARMLIFT_POWER);
+                currentPos = armMotor.getCurrentPosition();
+                armMotor.setTargetPosition(currentPos - LIFT_INCREMENT );
+                armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
             }
 
             double position = armMotor.getCurrentPosition();
