@@ -59,9 +59,9 @@ public class RRTeleOpMode extends LinearOpMode {
         INTAKE4 = hardwareMap.get(CRServo.class, "INTAKE4");
         wrist = hardwareMap.get(Servo.class, "WRIST");
         drone = hardwareMap.get(Servo.class, "droneLauncher");
-        DcMotor armMotor = hardwareMap.dcMotor.get("Arm Motor");
+        DcMotor armMotor = hardwareMap.dcMotor.get("Arm");
         DcMotor liftMotor = hardwareMap.dcMotor.get("LIFT");
-
+        armMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armMotor.setTargetPosition(armDownPosition);
@@ -159,15 +159,31 @@ public class RRTeleOpMode extends LinearOpMode {
                 wrist.setPosition(0);
                 armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); //to be tested
-                armMotor.setPower(0.75);
+                armMotor.setPower(-0.75);
             }
 
-            if(gamepad1.dpad_down){
-                armMotor.setPower(0.5);
+            if (gamepad1.dpad_up) {
+                armMotor.setTargetPosition(armMotor.getCurrentPosition()+50);
+                armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                armMotor.setPower(1);
+                telemetry.addData("Up: ", armMotor.getCurrentPosition());
             }
-            if(gamepad1.dpad_up){
-                armMotor.setPower(-0.5);
+            else if (gamepad1.dpad_down) {
+                armMotor.setTargetPosition(armMotor.getCurrentPosition()-50);
+                armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                armMotor.setPower(-0.75);
+                telemetry.addData("Down: ", armMotor.getCurrentPosition());
+            } else {armMotor.setPower(0);}
+            if (gamepad1.right_trigger>0) {
+                liftMotor.setTargetPosition(armMotor.getCurrentPosition()+50);
+                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                liftMotor.setPower(1);
+            } else if (gamepad1.left_trigger>0) {
+                liftMotor.setTargetPosition(armMotor.getCurrentPosition()-50);
+                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                liftMotor.setPower(-0.75);
             }
+
 
             double position = armMotor.getCurrentPosition();
             double position2 = liftMotor.getCurrentPosition();
