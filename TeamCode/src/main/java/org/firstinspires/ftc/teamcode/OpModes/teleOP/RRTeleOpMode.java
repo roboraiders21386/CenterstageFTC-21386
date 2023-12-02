@@ -116,10 +116,12 @@ public class RRTeleOpMode extends LinearOpMode {
             }
 
             if(gamepad1.x){
-                drone.setDirection(Servo.Direction.REVERSE);
+                drone.setDirection(Servo.Direction.FORWARD);
                 drone.setPosition(1);
                 telemetry.addData("Launching", "Drone");
                 telemetry.update();
+                sleep(1000);
+                drone.setPosition(0);
             }
 
             drive.updatePoseEstimate();
@@ -174,14 +176,14 @@ public class RRTeleOpMode extends LinearOpMode {
                 armMotor.setPower(-0.75);
                 telemetry.addData("Down: ", armMotor.getCurrentPosition());
             } else {armMotor.setPower(0);}
-            if (gamepad1.right_trigger>0) {
+            if (gamepad1.dpad_left) {
                 liftMotor.setTargetPosition(armMotor.getCurrentPosition()+50);
                 liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 liftMotor.setPower(1);
-            } else if (gamepad1.left_trigger>0) {
+            } else if (gamepad1.dpad_right) {
                 liftMotor.setTargetPosition(armMotor.getCurrentPosition()-50);
                 liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                liftMotor.setPower(-0.75);
+                liftMotor.setPower(-1);
             }
 
 

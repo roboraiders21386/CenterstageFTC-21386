@@ -41,6 +41,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import com.qualcomm.robotcore.hardware.CRServo;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.VisionOpenCVPipeline;
@@ -93,8 +94,9 @@ public class RRAutonomous extends LinearOpMode {
 
     public DriveTrain driveTrain;
 
+    public CRServo INTAKE3, INTAKE4;
 
-    public String whichSide = "LEFT";
+    public String whichSide = "RIGHT";
 
     //Initialize any other Pose2d's as desired
     Pose2d initPose; // Starting Pose
@@ -102,12 +104,13 @@ public class RRAutonomous extends LinearOpMode {
     Pose2d dropPurplePixelPose;
     Pose2d midwayPose1, midwayPose1a, intakeStack, midwayPose2, dropYellowPixelPose,parkPose;
     //Initialize any other TrajectorySequences as desired
-    TrajectorySequence trajectoryParking ;
+    TrajectorySequence trajectoryDrop, trajectoryParking ;
 
     @Override
     public void runOpMode() throws InterruptedException {
 
-
+        INTAKE3 = hardwareMap.get(CRServo.class, "INTAKE3");
+        INTAKE4 = hardwareMap.get(CRServo.class, "INTAKE4");
 
         //Create the vision pipeline object - 11/24
         visionPipeline = new VisionOpenCVPipeline(telemetry);
@@ -139,12 +142,12 @@ public class RRAutonomous extends LinearOpMode {
             //set the starting pose
             initPose = new Pose2d(0, 0, 0); // Starting Pose
             moveBeyondTrussPose = new Pose2d(0,0,0);
-            dropPurplePixelPose = new Pose2d(0, 0, 0);
+            dropPurplePixelPose = new Pose2d(37, 0, 0);
             midwayPose1 = new Pose2d(0,0,0);
             midwayPose1a = new Pose2d(0,0,0);
             intakeStack = new Pose2d(0,0,0);
             midwayPose2 = new Pose2d(0,0,0);
-            dropYellowPixelPose = new Pose2d(0, 0, 0);
+            dropYellowPixelPose = new Pose2d(30, 55, Math.toRadians(90));
             parkPose = new Pose2d(0,0, 0);
 
             //Letting the drivetrain know...
@@ -166,72 +169,84 @@ public class RRAutonomous extends LinearOpMode {
                     setBlueRightPositions(whichSide);
                     break;
             }
-            setBlueLeftPositions(whichSide);
+            //setBlueLeftPositions(whichSide);
 
             runTestAutonomous();
+            INTAKE3.setDirection(CRServo.Direction.FORWARD);
+            INTAKE4.setDirection(CRServo.Direction.REVERSE);
+            INTAKE4.setPower(0.75);
+            INTAKE3.setPower(0.75);
+            sleep(3000);
+            INTAKE4.setPower(0);
+            INTAKE3.setPower(0);
         }
     }   // end runOpMode()
 
 
     public void runTestAutonomous(){
 
-        trajectoryParking = driveTrain.trajectorySequenceBuilder(initPose)
+        trajectoryDrop = driveTrain.trajectorySequenceBuilder(initPose)
                 .setVelConstraint(getVelocityConstraint(30 /* Slower Velocity*/, 15 /*Slower Angular Velocity*/, DriveConstants.TRACK_WIDTH))
-                .lineToLinearHeading(moveBeyondTrussPose)
+                //.lineToLinearHeading(moveBeyondTrussPose)
                 .lineToLinearHeading(dropPurplePixelPose)
-                .lineToLinearHeading(midwayPose1)
-                .lineToLinearHeading(dropYellowPixelPose)
-                .lineToLinearHeading(parkPose)
+                //.lineToLinearHeading(midwayPose1)
+                //.lineToLinearHeading(dropYellowPixelPose)
+                //.lineToLinearHeading(parkPose)
                 //.back(10)
                 .build();
+        trajectoryParking = driveTrain.trajectorySequenceBuilder(trajectoryDrop.end())
+                .setVelConstraint(getVelocityConstraint(60 /* Slower Velocity*/, 15 /*Slower Angular Velocity*/, DriveConstants.TRACK_WIDTH))
+                .lineToLinearHeading(midwayPose1)
+                .lineToSplineHeading(dropYellowPixelPose)
+                .build();
+        driveTrain.followTrajectorySequence(trajectoryDrop);
         driveTrain.followTrajectorySequence(trajectoryParking);
+
     }
 
     public void setBlueLeftPositions(String whichSide){
-        moveBeyondTrussPose = new Pose2d(15,0,0);
         switch(whichSide){
             case "LEFT":
                 //dropPurplePixelPose = new Pose2d(26, 8, Math.toRadians(0));
-                dropPurplePixelPose = new Pose2d(30, 10, Math.toRadians(0));
+                dropPurplePixelPose = new Pose2d(30, 18, Math.toRadians(0));
+                telemetry.addData("Left", whichSide);
                 //dropYellowPixelPose = new Pose2d(23, 36, Math.toRadians(-90));
                 dropYellowPixelPose = new Pose2d(23, 36, Math.toRadians(90));
                 break;
-            case "MIDDLE":
-                dropPurplePixelPose = new Pose2d(30, 3, Math.toRadians(0));
-                dropYellowPixelPose = new Pose2d(30, 36,  Math.toRadians(90));
+            case "CENTER":
+                dropPurplePixelPose = new Pose2d(36, 0, Math.toRadians(0));
+                dropYellowPixelPose = new Pose2d(30, -36,  Math.toRadians(90));
                 break;
             case "RIGHT":
-                dropPurplePixelPose = new Pose2d(30, -9, Math.toRadians(-45));
-                dropYellowPixelPose = new Pose2d(37, 36, Math.toRadians(90));
+                dropPurplePixelPose = new Pose2d(30, 18, Math.toRadians(0));
+                dropYellowPixelPose = new Pose2d(37, -36, Math.toRadians(90));
                 break;
         }
         //midwayPose1 = new Pose2d(14, 13, Math.toRadians(-45));
         midwayPose1 = new Pose2d(12, 0, 0);
-        //waitSecondsBeforeDrop = 2; //TODO: Adjust time to wait for alliance partner to move from board
-        //parkPose = new Pose2d(8, 30, Math.toRadians(90));
-        //double waitSecondsBeforeDrop = 0;
 
     } //end of setBlueLeftPositions
 
     public void setRedRightPositions(String whichSide){
-        moveBeyondTrussPose = new Pose2d(15,0,0);
+        //moveBeyondTrussPose = new Pose2d(30,0,0);
 
 
         //THESE ARE NOT THE CORRECT POSITIONS FOR RED RIGHT SO CHANGE THEM
         switch(whichSide){
             case "LEFT":
                 //dropPurplePixelPose = new Pose2d(26, 8, Math.toRadians(0));
-                dropPurplePixelPose = new Pose2d(30, 10, Math.toRadians(0));
+                dropPurplePixelPose = new Pose2d(30, 18, Math.toRadians(0));
+                telemetry.addData("Left", whichSide);
                 //dropYellowPixelPose = new Pose2d(23, 36, Math.toRadians(-90));
                 dropYellowPixelPose = new Pose2d(23, 36, Math.toRadians(90));
                 break;
-            case "MIDDLE":
-                dropPurplePixelPose = new Pose2d(30, 3, Math.toRadians(0));
-                dropYellowPixelPose = new Pose2d(30, 36,  Math.toRadians(90));
+            case "CENTER":
+                dropPurplePixelPose = new Pose2d(36, 0, Math.toRadians(0));
+                dropYellowPixelPose = new Pose2d(30, -36,  Math.toRadians(90));
                 break;
             case "RIGHT":
-                dropPurplePixelPose = new Pose2d(30, -9, Math.toRadians(-45));
-                dropYellowPixelPose = new Pose2d(37, 36, Math.toRadians(90));
+                dropPurplePixelPose = new Pose2d(30, 18, Math.toRadians(0));
+                dropYellowPixelPose = new Pose2d(37, -36, Math.toRadians(90));
                 break;
         }
         //midwayPose1 = new Pose2d(14, 13, Math.toRadians(-45));
