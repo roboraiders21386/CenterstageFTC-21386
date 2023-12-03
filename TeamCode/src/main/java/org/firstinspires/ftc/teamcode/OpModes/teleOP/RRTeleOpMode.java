@@ -90,8 +90,6 @@ public class RRTeleOpMode extends LinearOpMode {
 
             //Update the pos estimates
             drive.update();
-
-
             if (pixel.isPressed()) {
                 INTAKE3.setPower(0); //stops the intake servos
                 INTAKE4.setPower(0);
@@ -154,7 +152,15 @@ public class RRTeleOpMode extends LinearOpMode {
 
             INTAKE3.setPower(0);
             INTAKE4.setPower(0);
-
+            if (gamepad1.b) {
+                armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                armMotor.setTargetPosition(1100);
+                telemetry.addData("Up: ", armMotor.getCurrentPosition());
+                liftMotor.setTargetPosition(1394);
+                armMotor.setPower(1);
+                liftMotor.setPower(1);
+            }
             if (gamepad1.start) { //this resets the arm to attach the hook
                 armMotor.setTargetPosition(0);
                 liftMotor.setTargetPosition(0);
