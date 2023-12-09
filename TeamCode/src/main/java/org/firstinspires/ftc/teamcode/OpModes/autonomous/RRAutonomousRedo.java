@@ -30,38 +30,30 @@
 package org.firstinspires.ftc.teamcode.OpModes.autonomous;
 
 import static com.qualcomm.robotcore.util.ElapsedTime.Resolution.SECONDS;
-
 import static org.firstinspires.ftc.teamcode.drive.MecanumDrive.getVelocityConstraint;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-//import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import com.qualcomm.robotcore.hardware.CRServo;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.VisionOpenCVPipeline;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
-import org.firstinspires.ftc.teamcode.drive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-
-import java.util.List;
 
 /**
  * RR Autonomous
  */
 @Autonomous(name = "RR Auto (roadrunner 0.5.6)", group = "00-Autonomous", preselectTeleOp = "RR TeleOp")
-public class RRAutonomous extends LinearOpMode {
+public class RRAutonomousRedo extends LinearOpMode {
 
     public static String TEAM_NAME = "RoboRaiders";
     public static int TEAM_NUMBER = 21386;
@@ -189,41 +181,14 @@ public class RRAutonomous extends LinearOpMode {
 
 
     public void runTestAutonomous(){
-        trajectoryDrop = driveTrain.trajectorySequenceBuilder(initPose)
-                .setVelConstraint(getVelocityConstraint(30 /* Slower Velocity*/, 15 /*Slower Angular Velocity*/, DriveConstants.TRACK_WIDTH))
-                .lineToLinearHeading(moveBeyondTrussPose)
-                .lineToLinearHeading(dropPurplePixelPose)
-                //.lineToLinearHeading(midwayPose1)
-                //.lineToLinearHeading(dropYellowPixelPose)
-                //.lineToLinearHeading(parkPose)
-                //.back(10)
-                .build();
-        trajectoryParking = driveTrain.trajectorySequenceBuilder(trajectoryDrop.end())
-                .setVelConstraint(getVelocityConstraint(60 /* Slower Velocity*/, 15 /*Slower Angular Velocity*/, DriveConstants.TRACK_WIDTH))
-                .back(15)
-                .lineToSplineHeading(dropYellowPixelPose)
-                .build();
-        trajectoryFinal = driveTrain.trajectorySequenceBuilder(trajectoryParking.end())
-                .forward(8)
-                .build();
-        driveTrain.followTrajectorySequence(trajectoryDrop);
-        wrist.setDirection(Servo.Direction.REVERSE); //edit for only one signal bc of y cable
-        wrist.setPosition(TURN_WRIST); //edit for only one signal bc of y cable
-        ServoPosition += ServoSpeed;
-        sleep(5000);
-        driveTrain.followTrajectorySequence(trajectoryParking);
+
 
     }
 
-    public void setBlueLeftPositions(String whichSide){
-        moveBeyondTrussPose = new Pose2d(20,0,0);
+    public void setBlueLeftPositions(String whichSide) {
         switch(whichSide){
             case "LEFT":
-                //dropPurplePixelPose = new Pose2d(26, 8, Math.toRadians(0));
-                dropPurplePixelPose = new Pose2d(30, 8, Math.toRadians(45));
-                telemetry.addData("Left", whichSide);
-                //dropYellowPixelPose = new Pose2d(23, 36, Math.toRadians(-90));
-                dropYellowPixelPose = new Pose2d(21, 38, Math.toRadians(90));
+                
                 break;
             case "CENTER":
                 dropPurplePixelPose = new Pose2d(36, 0, Math.toRadians(0));
