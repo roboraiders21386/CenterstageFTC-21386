@@ -34,6 +34,7 @@ import static org.firstinspires.ftc.teamcode.drive.MecanumDrive.getVelocityConst
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -52,7 +53,8 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 /**
  * RR Autonomous
  */
-@Autonomous(name = "RR Auto (roadrunner 0.5.6)", group = "00-Autonomous", preselectTeleOp = "RR TeleOp")
+@Disabled
+@Autonomous(name = "RR Auto (roadrunner 0.5.6) Redo", group = "00-Autonomous", preselectTeleOp = "RR TeleOp")
 public class RRAutonomousRedo extends LinearOpMode {
 
     public static String TEAM_NAME = "RoboRaiders";
