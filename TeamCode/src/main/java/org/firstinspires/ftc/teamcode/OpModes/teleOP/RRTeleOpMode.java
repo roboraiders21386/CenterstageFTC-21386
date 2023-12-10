@@ -24,7 +24,6 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 @TeleOp(name = "RR TeleOp (roadrunner 0.5.6)", group = "00-Teleop")
 public class RRTeleOpMode extends LinearOpMode {
 
-    private int LIFT_INCREMENT = 550;
     private TouchSensor pixel;
 
     private CRServo INTAKE3; //moving wheels
@@ -36,15 +35,12 @@ public class RRTeleOpMode extends LinearOpMode {
 
     private double TURN_WRIST = 1; //turn it forward
     private double RESET_WRIST = 0.5; //so it doesn't swing 180 back
-    
-    private double ARMLIFT_POWER = 0.5; //TODO change later after testing period 
 
     double ServoPosition = 1;
     double ServoSpeed = 0.5;
 
     private Servo RWRIST;
     private Servo LWRIST;
-
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -57,7 +53,6 @@ public class RRTeleOpMode extends LinearOpMode {
         int liftUpPosition = -150;
         int armDownPosition = 300;
         int liftDownPosition = 150;
-        int currentPos;
 
         pixel = hardwareMap.get(TouchSensor.class, "pixel");
         INTAKE3 = hardwareMap.get(CRServo.class, "INTAKE3");
@@ -66,8 +61,7 @@ public class RRTeleOpMode extends LinearOpMode {
         drone = hardwareMap.get(Servo.class, "droneLauncher");
         DcMotor armMotor = hardwareMap.dcMotor.get("Arm");
         DcMotor liftMotor = hardwareMap.dcMotor.get("LIFT");
-
-
+        armMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armMotor.setTargetPosition(armDownPosition);
@@ -96,26 +90,6 @@ public class RRTeleOpMode extends LinearOpMode {
 
             //Update the pos estimates
             drive.update();
-
-            if (gamepad1.right_stick_y > 0) {
-                armMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-                liftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-                armMotor.setPower( gamepad1.right_stick_y);
-                liftMotor.setPower(gamepad1.right_stick_y);
-                telemetry.addData("Should Be", "Moving UP!");
-                telemetry.update();
-            }
-
-            if (gamepad1.right_stick_y < 0) {
-                armMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-                liftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-                armMotor.setPower(-0.5 *  gamepad1.right_stick_y);
-                liftMotor.setPower(-0.5 *  gamepad1.right_stick_y);
-                telemetry.addData("Should Be", "Moving DOWN!");
-                telemetry.update();
-            }
-
-
             if (pixel.isPressed()) {
                 INTAKE3.setPower(0); //stops the intake servos
                 INTAKE4.setPower(0);
@@ -140,10 +114,12 @@ public class RRTeleOpMode extends LinearOpMode {
             }
 
             if(gamepad1.x){
-                drone.setDirection(Servo.Direction.REVERSE);
+                drone.setDirection(Servo.Direction.FORWARD);
                 drone.setPosition(1);
                 telemetry.addData("Launching", "Drone");
                 telemetry.update();
+                sleep(1000);
+                drone.setPosition(0);
             }
 
             drive.updatePoseEstimate();
@@ -176,31 +152,46 @@ public class RRTeleOpMode extends LinearOpMode {
 
             INTAKE3.setPower(0);
             INTAKE4.setPower(0);
-
+            if (gamepad1.b) {
+                armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                armMotor.setTargetPosition(1100);
+                telemetry.addData("Up: ", armMotor.getCurrentPosition());
+                liftMotor.setTargetPosition(1394);
+                armMotor.setPower(1);
+                liftMotor.setPower(1);
+            }
             if (gamepad1.start) { //this resets the arm to attach the hook
                 armMotor.setTargetPosition(0);
                 liftMotor.setTargetPosition(0);
-                wrist.setPosition(RESET_WRIST);
+                wrist.setPosition(0);
                 armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); //TODO to be tested
-                armMotor.setPower(0.75);
+                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); //to be tested
+                armMotor.setPower(-0.75);
             }
 
-            if (gamepad2.dpad_up){
-                //Incremental Slide up
-                armMotor.setPower(1 * ARMLIFT_POWER);
-                currentPos = armMotor.getCurrentPosition();
-                armMotor.setTargetPosition(currentPos + LIFT_INCREMENT );
+            if (gamepad1.dpad_up) {
+                armMotor.setTargetPosition(armMotor.getCurrentPosition()+50);
                 armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                armMotor.setPower(1);
+                telemetry.addData("Up: ", armMotor.getCurrentPosition());
             }
-            if (gamepad2.dpad_down){
-                //Incremental Slide down
-                armMotor.setPower(-1 * ARMLIFT_POWER);
-                currentPos = armMotor.getCurrentPosition();
-                armMotor.setTargetPosition(currentPos - LIFT_INCREMENT );
+            else if (gamepad1.dpad_down) {
+                armMotor.setTargetPosition(armMotor.getCurrentPosition()-50);
                 armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                armMotor.setPower(-0.75);
+                telemetry.addData("Down: ", armMotor.getCurrentPosition());
+            } else {armMotor.setPower(0);}
+            if (gamepad1.dpad_left) {
+                liftMotor.setTargetPosition(armMotor.getCurrentPosition()+50);
+                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                liftMotor.setPower(1);
+            } else if (gamepad1.dpad_right) {
+                liftMotor.setTargetPosition(armMotor.getCurrentPosition()-50);
+                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                liftMotor.setPower(-1);
+            }
 
-            }
 
             double position = armMotor.getCurrentPosition();
             double position2 = liftMotor.getCurrentPosition();
