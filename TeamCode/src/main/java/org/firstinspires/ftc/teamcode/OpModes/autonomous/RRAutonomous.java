@@ -95,13 +95,13 @@ public class RRAutonomous extends LinearOpMode {
 
     public DriveTrain driveTrain;
 
-    public CRServo INTAKE3, INTAKE4;
+    public Servo INTAKE;
     public Servo wrist;
 
     public String whichSide = "RIGHT";
     double ServoPosition = 1;
     double ServoSpeed = 0.5;
-    private double TURN_WRIST = 1; //turn it forward
+    private double TURN_WRIST = 0.5; //turn it forward
     //Initialize any other Pose2d's as desired
     Pose2d initPose; // Starting Pose
     Pose2d moveBeyondTrussPose;
@@ -113,8 +113,7 @@ public class RRAutonomous extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        INTAKE3 = hardwareMap.get(CRServo.class, "INTAKE3");
-        INTAKE4 = hardwareMap.get(CRServo.class, "INTAKE4");
+        INTAKE = hardwareMap.get(Servo.class, "INTAKE");
         wrist = hardwareMap.get(Servo.class, "WRIST");
         //Create the vision pipeline object - 11/24
         visionPipeline = new VisionOpenCVPipeline(telemetry);
@@ -177,13 +176,10 @@ public class RRAutonomous extends LinearOpMode {
 
             runTestAutonomous();
             driveTrain.followTrajectorySequence(trajectoryFinal);
-            INTAKE3.setDirection(CRServo.Direction.FORWARD);
-            INTAKE4.setDirection(CRServo.Direction.REVERSE);
-            INTAKE4.setPower(-0.75);
-            INTAKE3.setPower(-0.75);
+            INTAKE.setDirection(Servo.Direction.FORWARD);
+            INTAKE.setPosition(0.75);
             sleep(1000);
-            INTAKE4.setPower(0);
-            INTAKE3.setPower(0);
+            INTAKE.setPosition(0);
         }
     }   // end runOpMode()
 
@@ -207,7 +203,7 @@ public class RRAutonomous extends LinearOpMode {
                 .forward(8)
                 .build();
         driveTrain.followTrajectorySequence(trajectoryDrop);
-        wrist.setDirection(Servo.Direction.REVERSE); //edit for only one signal bc of y cable
+        wrist.setDirection(Servo.Direction.FORWARD); //edit for only one signal bc of y cable
         wrist.setPosition(TURN_WRIST); //edit for only one signal bc of y cable
         ServoPosition += ServoSpeed;
         sleep(5000);
@@ -221,17 +217,17 @@ public class RRAutonomous extends LinearOpMode {
             case "LEFT":
                 //dropPurplePixelPose = new Pose2d(26, 8, Math.toRadians(0));
                 dropPurplePixelPose = new Pose2d(30, 8, Math.toRadians(45));
-                telemetry.addData("Left", whichSide);
                 //dropYellowPixelPose = new Pose2d(23, 36, Math.toRadians(-90));
-                dropYellowPixelPose = new Pose2d(21, 38, Math.toRadians(90));
+                dropYellowPixelPose = new Pose2d(25, 38, Math.toRadians(90));
                 break;
             case "CENTER":
                 dropPurplePixelPose = new Pose2d(36, 0, Math.toRadians(0));
-                dropYellowPixelPose = new Pose2d(30, 38,  Math.toRadians(90));
+                dropYellowPixelPose = new Pose2d(34, 38,  Math.toRadians(90));
                 break;
             case "RIGHT":
                 dropPurplePixelPose = new Pose2d(32, -8, Math.toRadians(315));
-                dropYellowPixelPose = new Pose2d(38, 38, Math.toRadians(90));
+                telemetry.addData("Right", whichSide);
+                dropYellowPixelPose = new Pose2d(42, 38, Math.toRadians(90));
                 break;
         }
         //midwayPose1 = new Pose2d(14, 13, Math.toRadians(-45));
